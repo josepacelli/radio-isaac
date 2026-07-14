@@ -7,6 +7,23 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.text.Normalizer
 
+// Estações adicionadas manualmente (não estão no RadioBrowser)
+val PINNED_STATIONS = listOf(
+    RadioStation(
+        uuid        = "pinned-forbes-sp-001",
+        name        = "Forbes Radio SP 106.1 FM",
+        streamUrl   = "https://9176.brasilstream.com.br/stream",
+        favicon     = "https://forbes.com.br/wp-content/uploads/2020/08/forbes-icon.png",
+        tags        = "negocios,economia,noticias",
+        country     = "Brazil",
+        countryCode = "BR",
+        codec       = "AAC",
+        bitrate     = 64,
+        votes       = 9999,
+        language    = "portuguese"
+    )
+)
+
 class RadioRepository {
     private val api = RadioApiClient.api
     private val rgApi = RadioGardenClient.api
@@ -64,11 +81,14 @@ class RadioRepository {
                     try { fetchRgStations(getBrazilPlaces().sortedByDescending { it.size }.take(10)) }
                     catch (e: Exception) { emptyList() }
                 }
-                (byVotes.await() + byClicks.await() + byTrend.await() + byLang.await() +
-                 byName.await() + byTagBr.await() + byTagEn.await() + rgTop.await())
-                    .filter { it.effectiveStreamUrl.isNotBlank() }
+                val trAll     = async { TudoRadioClient.fetchAll() }
+                val pinnedIds = PINNED_STATIONS.map { it.uuid }.toSet()
+                (PINNED_STATIONS +
+                 (byVotes.await() + byClicks.await() + byTrend.await() + byLang.await() +
+                  byName.await() + byTagBr.await() + byTagEn.await() + rgTop.await() + trAll.await())
+                    .filter { it.effectiveStreamUrl.isNotBlank() && it.uuid !in pinnedIds }
                     .distinctBy { it.uuid }
-                    .sortedByDescending { it.votes }
+                    .sortedByDescending { it.votes })
             }
         }
     }
@@ -138,9 +158,11 @@ class RadioRepository {
                         }
                     }
 
+                    val trState = async { TudoRadioClient.fetchByState(region.stateCode) }
                     val rb = (rbAccented.await() + rbStripped.await() + rbSearch.await() + rbCity.await()).distinctBy { it.uuid }
                     val rg = rgAsync.await()
-                    (rb + rg).distinctBy { it.uuid }.sortedByDescending { it.votes }
+                    val tr = trState.await()
+                    (rb + rg + tr).distinctBy { it.uuid }.sortedByDescending { it.votes }
                 }
             }
         }

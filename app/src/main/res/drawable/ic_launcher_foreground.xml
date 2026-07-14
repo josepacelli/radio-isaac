@@ -5,63 +5,68 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Arc 3 — outermost, faint -->
+    <!-- Circle panel background -->
+    <path
+        android:fillColor="#1E2028"
+        android:pathData="M54,54 m-38,0 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0"/>
+
+    <!-- Glow layer (bars slightly wider, very transparent) -->
+    <group>
+        <clip-path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 26,72 L 26,58"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 33,72 L 33,47"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 40,72 L 40,39"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 47,72 L 47,33"/>
+        <path android:strokeColor="#FFD166" android:strokeWidth="8" android:strokeAlpha="0.15" android:strokeLineCap="round" android:pathData="M 54,72 L 54,28"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 61,72 L 61,35"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 68,72 L 68,43"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 75,72 L 75,51"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="8" android:strokeAlpha="0.12" android:strokeLineCap="round" android:pathData="M 82,72 L 82,60"/>
+    </group>
+
+    <!-- Spectrum bars (solid) -->
+    <group>
+        <clip-path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 26,72 L 26,58"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 33,72 L 33,47"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 40,72 L 40,39"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 47,72 L 47,33"/>
+        <path android:strokeColor="#FFD166" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 54,72 L 54,28"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 61,72 L 61,35"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 68,72 L 68,43"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 75,72 L 75,51"/>
+        <path android:strokeColor="#58DBAB" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M 82,72 L 82,60"/>
+    </group>
+
+    <!-- Outer ring -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#58DBAB"
         android:strokeWidth="2.5"
-        android:strokeAlpha="0.35"
-        android:strokeLineCap="round"
-        android:pathData="M 22,68 A 32,32 0 0,0 86,68"/>
+        android:pathData="M54,54 m-38,0 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0"/>
 
-    <!-- Arc 2 — middle -->
+    <!-- Inner thin ring accent -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#58DBAB"
-        android:strokeWidth="3"
-        android:strokeAlpha="0.65"
-        android:strokeLineCap="round"
-        android:pathData="M 32,68 A 22,22 0 0,0 76,68"/>
+        android:strokeWidth="0.8"
+        android:strokeAlpha="0.25"
+        android:pathData="M54,54 m-34,0 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0"/>
 
-    <!-- Arc 1 — innermost, full opacity -->
+    <!-- Knob base -->
+    <path
+        android:fillColor="#252A34"
+        android:pathData="M54,80 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0"/>
+
+    <!-- Knob ring -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#58DBAB"
-        android:strokeWidth="3.5"
-        android:strokeLineCap="round"
-        android:pathData="M 42,68 A 12,12 0 0,0 66,68"/>
+        android:strokeWidth="1.5"
+        android:pathData="M54,80 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0"/>
 
-    <!-- Dot outer ring (teal) -->
-    <path
-        android:fillColor="#58DBAB"
-        android:pathData="M 54,68 m -5.5,0 a 5.5,5.5 0 1,0 11,0 a 5.5,5.5 0 1,0 -11,0"/>
-
-    <!-- Dot inner core (yellow) -->
+    <!-- Knob indicator dot (yellow) -->
     <path
         android:fillColor="#FFD166"
-        android:pathData="M 54,68 m -2.5,0 a 2.5,2.5 0 1,0 5,0 a 2.5,2.5 0 1,0 -5,0"/>
-
-    <!-- Frequency scale baseline -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#3A3F4C"
-        android:strokeWidth="1.5"
-        android:pathData="M 26,82 L 82,82"/>
-
-    <!-- Tick marks -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#58DBAB"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.45"
-        android:strokeLineCap="round"
-        android:pathData="M 33,79 L 33,82 M 43,79 L 43,82 M 63,79 L 63,82 M 73,79 L 73,82"/>
-
-    <!-- Active tuned marker (yellow, taller) -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFD166"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M 54,76 L 54,82"/>
+        android:pathData="M54,73 m-2.2,0 a2.2,2.2 0 1,0 4.4,0 a2.2,2.2 0 1,0 -4.4,0"/>
 </vector>

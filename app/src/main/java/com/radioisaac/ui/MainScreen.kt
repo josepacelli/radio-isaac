@@ -318,40 +318,46 @@ private fun TefMainDisplay(
             .background(PanelBg),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Favicon
-        Box(
-            modifier = Modifier
-                .padding(start = 10.dp)
-                .size(56.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(PanelBg2)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            val favicon = uiState.currentStation?.favicon
-            if (!favicon.isNullOrBlank()) {
-                AsyncImage(
-                    model = favicon, contentDescription = null,
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Fit
-                )
-            } else {
-                Icon(Icons.Default.Radio, null, tint = AccentTeal.copy(alpha = 0.35f), modifier = Modifier.size(28.dp))
-            }
-        }
-
         // Prev
         IconButton(onClick = onPrev, modifier = Modifier.size(38.dp)) {
             Icon(Icons.Default.SkipPrevious, null, tint = AccentTeal.copy(alpha = 0.7f), modifier = Modifier.size(26.dp))
         }
 
-        // Center: freq + PS + play
+        // Center: logo + freq + PS + play
         Column(
             modifier = Modifier.weight(1f).padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             val station = uiState.currentStation
+
+            // Logo — large, centered
+            val favicon = station?.favicon
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(PanelBg2)
+                    .border(
+                        1.5.dp,
+                        if (!favicon.isNullOrBlank()) AccentTeal.copy(alpha = 0.5f) else BorderColor,
+                        RoundedCornerShape(14.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!favicon.isNullOrBlank()) {
+                    AsyncImage(
+                        model = favicon,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Icon(Icons.Default.Radio, null, tint = AccentTeal.copy(alpha = 0.3f), modifier = Modifier.size(40.dp))
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
             val freq = station?.extractedFrequency
 
             // Frequency

@@ -182,8 +182,8 @@ private fun PortraitContent(
         TefInfoBoxesRow(uiState)
         TefMetersRow(uiState)
         TefRdsDataRow(uiState)
-        TefPsRow(uiState)
-        TefRtFooter(uiState)
+        TefPsRow(uiState, onEdit)
+        TefRtFooter(uiState, onEdit)
     }
 }
 
@@ -204,8 +204,8 @@ private fun LandscapeContent(
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             TefMetersRow(uiState)
             TefRdsDataRow(uiState)
-            TefPsRow(uiState)
-            TefRtFooter(uiState)
+            TefPsRow(uiState, onEdit)
+            TefRtFooter(uiState, onEdit)
             Spacer(Modifier.weight(1f))
         }
     }
@@ -441,15 +441,26 @@ private fun TefMainDisplay(
                         strokeWidth = 1.5.dp
                     )
                 }
-                // Edit metadata button
+                // Edit RDS metadata button
                 if (uiState.currentStation != null && onEdit != null) {
                     val hasCustom = uiState.customPs.isNotBlank() || uiState.customPty.isNotBlank() || uiState.customRt.isNotBlank()
-                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            Icons.Default.Edit, null,
-                            tint = if (hasCustom) FrequencyYellow else DarkGreyColor,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    val btnColor = if (hasCustom) FrequencyYellow else AccentTeal
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(btnColor.copy(alpha = 0.12f))
+                            .border(1.dp, btnColor.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                            .clickable(onClick = onEdit)
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(Icons.Default.Edit, null, tint = btnColor, modifier = Modifier.size(14.dp))
+                            Text("RDS", color = btnColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -619,7 +630,7 @@ private fun RdsField(label: String, value: String, valueColor: Color, modifier: 
 // ─── PS ROW ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefPsRow(uiState: RadioUiState) {
+private fun TefPsRow(uiState: RadioUiState, onEdit: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -710,7 +721,7 @@ private fun TefPsRow(uiState: RadioUiState) {
 // ─── RT FOOTER ────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefRtFooter(uiState: RadioUiState) {
+private fun TefRtFooter(uiState: RadioUiState, onEdit: () -> Unit) {
     val rtText = when {
         uiState.customRt.isNotBlank() -> uiState.customRt.uppercase()
         uiState.rtTitle.isNotBlank() -> uiState.rtTitle.uppercase()
@@ -730,7 +741,6 @@ private fun TefRtFooter(uiState: RadioUiState) {
         modifier = Modifier
             .fillMaxWidth()
             .background(PanelBg2)
-            .border(width = 0.dp, color = Color.Transparent) // spacer line
             .padding(vertical = 1.dp)
             .background(AccentTeal.copy(alpha = 0.06f))
             .height(30.dp),

@@ -4,49 +4,64 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Arc 3 — outermost, faint -->
     <path
-        android:fillColor="#000000"
-        android:pathData="M0,0H108V108H0z"/>
-    <!-- Outer antenna -->
-    <path
-        android:strokeColor="#FFFF00"
-        android:strokeWidth="3"
         android:fillColor="#00000000"
-        android:pathData="M54,12 L54,30"/>
-    <!-- Outer ring -->
+        android:strokeColor="#58DBAB"
+        android:strokeWidth="2.5"
+        android:strokeAlpha="0.35"
+        android:strokeLineCap="round"
+        android:pathData="M 22,68 A 32,32 0 0,0 86,68"/>
+
+    <!-- Arc 2 — middle -->
     <path
-        android:strokeColor="#FFFF00"
-        android:strokeWidth="3"
         android:fillColor="#00000000"
-        android:pathData="M54,34 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0"/>
-    <!-- Inner dot -->
-    <path
-        android:fillColor="#FFFF00"
-        android:pathData="M54,34 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
-    <!-- Signal bars -->
-    <path
-        android:strokeColor="#00FF00"
+        android:strokeColor="#58DBAB"
         android:strokeWidth="3"
+        android:strokeAlpha="0.65"
         android:strokeLineCap="round"
-        android:pathData="M18,76 L18,88"/>
+        android:pathData="M 32,68 A 22,22 0 0,0 76,68"/>
+
+    <!-- Arc 1 — innermost, full opacity -->
     <path
-        android:strokeColor="#00FF00"
-        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:strokeColor="#58DBAB"
+        android:strokeWidth="3.5"
         android:strokeLineCap="round"
-        android:pathData="M26,70 L26,88"/>
+        android:pathData="M 42,68 A 12,12 0 0,0 66,68"/>
+
+    <!-- Dot outer ring (teal) -->
     <path
-        android:strokeColor="#00FF00"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M34,64 L34,88"/>
+        android:fillColor="#58DBAB"
+        android:pathData="M 54,68 m -5.5,0 a 5.5,5.5 0 1,0 11,0 a 5.5,5.5 0 1,0 -11,0"/>
+
+    <!-- Dot inner core (yellow) -->
     <path
-        android:strokeColor="#FF8800"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M42,70 L42,88"/>
+        android:fillColor="#FFD166"
+        android:pathData="M 54,68 m -2.5,0 a 2.5,2.5 0 1,0 5,0 a 2.5,2.5 0 1,0 -5,0"/>
+
+    <!-- Frequency scale baseline -->
     <path
-        android:strokeColor="#FF0000"
-        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:strokeColor="#3A3F4C"
+        android:strokeWidth="1.5"
+        android:pathData="M 26,82 L 82,82"/>
+
+    <!-- Tick marks -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#58DBAB"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.45"
         android:strokeLineCap="round"
-        android:pathData="M50,76 L50,88"/>
+        android:pathData="M 33,79 L 33,82 M 43,79 L 43,82 M 63,79 L 63,82 M 73,79 L 73,82"/>
+
+    <!-- Active tuned marker (yellow, taller) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD166"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 54,76 L 54,82"/>
 </vector>

@@ -100,29 +100,11 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
             .systemBarsPadding()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TefHeaderRow(uiState)
+            TefHeaderRow(uiState, vm::openStationList)
             if (isLandscape) {
                 LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
             } else {
                 PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
-            }
-        }
-
-        // FAB — station list
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(52.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(PanelBg2)
-                .border(1.dp, AccentTeal.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                .clickable(onClick = vm::openStationList),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.List, null, tint = AccentTeal, modifier = Modifier.size(22.dp))
-                Text("LIST", fontSize = 9.sp, fontFamily = FontFamily.Monospace, color = AccentTeal)
             }
         }
 
@@ -214,7 +196,7 @@ private fun LandscapeContent(
 // ─── HEADER ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefHeaderRow(uiState: RadioUiState) {
+private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "rds")
     val rdsAlpha by infiniteTransition.animateFloat(
         initialValue = 1f, targetValue = 0.2f,
@@ -266,6 +248,22 @@ private fun TefHeaderRow(uiState: RadioUiState) {
         HeaderBtn("BW", uiState.isStreamActive)
         Spacer(Modifier.width(2.dp))
         HeaderBtn("AGC", uiState.isPlaying)
+        Spacer(Modifier.width(6.dp))
+        // Station list button — in header so it never overlaps content
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(AccentTeal.copy(alpha = 0.12f))
+                .border(1.dp, AccentTeal.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                .clickable(onClick = onOpenList)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Icon(Icons.Default.List, null, tint = AccentTeal, modifier = Modifier.size(13.dp))
+                Text("LIST", color = AccentTeal, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 

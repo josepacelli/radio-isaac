@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#000000"
+        android:pathData="M0,0H108V108H0z"/>
+    <!-- Outer antenna -->
+    <path
+        android:strokeColor="#FFFF00"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M54,12 L54,30"/>
+    <!-- Outer ring -->
+    <path
+        android:strokeColor="#FFFF00"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M54,34 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0"/>
+    <!-- Inner dot -->
+    <path
+        android:fillColor="#FFFF00"
+        android:pathData="M54,34 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
+    <!-- Signal bars -->
+    <path
+        android:strokeColor="#00FF00"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M18,76 L18,88"/>
+    <path
+        android:strokeColor="#00FF00"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M26,70 L26,88"/>
+    <path
+        android:strokeColor="#00FF00"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M34,64 L34,88"/>
+    <path
+        android:strokeColor="#FF8800"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M42,70 L42,88"/>
+    <path
+        android:strokeColor="#FF0000"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M50,76 L50,88"/>
+</vector>

@@ -14,6 +14,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,6 +57,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -629,54 +631,61 @@ private fun TefPsRow(uiState: RadioUiState) {
         // PS label
         Text("PS", color = DarkGreyColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
 
-        // 8-char cells — custom PS overrides station name; scrolls when > 8 chars
-        val psSource = (uiState.customPs.ifBlank { uiState.currentStation?.name ?: "" }).uppercase()
-        val shouldScroll = psSource.length > 8
-        // Always pad to ≥8 chars so totalLen is never 0 (avoids divide-by-zero in tween)
-        val scrollText = "$psSource        "
-        val totalLen = scrollText.length  // always >= 8
+        // PS cells fill available space between "PS" label and PI box
+        BoxWithConstraints(modifier = Modifier.weight(1f)) {
+            val cellW = 18.dp
+            val cellGap = 2.dp
+            val cellWPx = with(LocalDensity.current) { cellW.toPx() }
+            val cellGapPx = with(LocalDensity.current) { cellGap.toPx() }
+            val numCells = ((constraints.maxWidth + cellGapPx) / (cellWPx + cellGapPx))
+                .toInt().coerceAtLeast(1)
 
-        val infiniteScroll = rememberInfiniteTransition(label = "ps_scroll")
-        val rawOffset by infiniteScroll.animateFloat(
-            initialValue = 0f,
-            targetValue = totalLen.toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = totalLen * 280, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "ps_offset"
-        )
-        val offset = if (shouldScroll) rawOffset.toInt() % totalLen else 0
+            val psSource = (uiState.customPs.ifBlank { uiState.currentStation?.name ?: "" }).uppercase()
+            val shouldScroll = psSource.length > numCells
+            // Pad with numCells spaces as gap; totalLen always > 0
+            val scrollText = "$psSource" + " ".repeat(numCells.coerceAtLeast(8))
+            val totalLen = scrollText.length
 
-        val psChars = if (shouldScroll) {
-            val doubled = scrollText + scrollText
-            doubled.substring(offset, offset + 8)
-        } else {
-            psSource.take(8).padEnd(8)
-        }
+            val infiniteScroll = rememberInfiniteTransition(label = "ps_scroll")
+            val rawOffset by infiniteScroll.animateFloat(
+                initialValue = 0f,
+                targetValue = totalLen.toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = totalLen * 280, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "ps_offset"
+            )
+            val offset = if (shouldScroll) rawOffset.toInt() % totalLen else 0
 
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            psChars.forEach { ch ->
-                Box(
-                    modifier = Modifier
-                        .size(width = 18.dp, height = 26.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(PanelBg2)
-                        .border(1.dp, BorderColor, RoundedCornerShape(3.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = ch.toString(),
-                        color = if (uiState.currentStation != null) FrequencyYellow else DarkGreyColor,
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
-                    )
+            val psChars = if (shouldScroll) {
+                val doubled = scrollText + scrollText
+                doubled.substring(offset, offset + numCells)
+            } else {
+                psSource.take(numCells).padEnd(numCells)
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(cellGap)) {
+                psChars.forEach { ch ->
+                    Box(
+                        modifier = Modifier
+                            .size(width = cellW, height = 26.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(PanelBg2)
+                            .border(1.dp, BorderColor, RoundedCornerShape(3.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = ch.toString(),
+                            color = if (uiState.currentStation != null) FrequencyYellow else DarkGreyColor,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
-
-        Spacer(Modifier.weight(1f))
 
         // PI code
         Text("PI", color = DarkGreyColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace)

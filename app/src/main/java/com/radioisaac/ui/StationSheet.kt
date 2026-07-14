@@ -1,15 +1,40 @@
 package com.radioisaac.ui
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +49,17 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.radioisaac.data.BrazilRegion
 import com.radioisaac.data.RadioStation
-import com.radioisaac.ui.theme.*
+import com.radioisaac.ui.theme.AccentTeal
+import com.radioisaac.ui.theme.BorderColor
+import com.radioisaac.ui.theme.CyanColor
+import com.radioisaac.ui.theme.DarkGreyColor
+import com.radioisaac.ui.theme.DimWhite
+import com.radioisaac.ui.theme.FrequencyYellow
+import com.radioisaac.ui.theme.GreyOutColor
+import com.radioisaac.ui.theme.PanelBg
+import com.radioisaac.ui.theme.PanelBg2
+import com.radioisaac.ui.theme.SkyBlueColor
+import com.radioisaac.ui.theme.WhiteColor
 import com.radioisaac.viewmodel.RadioUiState
 
 private val BRAZIL_REGIONS = listOf(
@@ -67,8 +102,8 @@ fun StationListSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = BackgroundBlack,
-        scrimColor = Color.Black.copy(alpha = 0.7f),
+        containerColor = PanelBg,
+        scrimColor = Color.Black.copy(alpha = 0.75f),
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -79,7 +114,7 @@ fun StationListSheet(
                 Box(
                     Modifier
                         .size(36.dp, 3.dp)
-                        .background(BorderBlue, RoundedCornerShape(2.dp))
+                        .background(AccentTeal, RoundedCornerShape(2.dp))
                 )
             }
         }
@@ -88,19 +123,19 @@ fun StationListSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.93f)
-                .border(1.dp, BorderBlue)
+                .border(1.dp, BorderColor)
         ) {
             // Header bar (like "PRESS MODE TO EXIT" header in original)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF000022))
+                    .background(PanelBg2)
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "STATION SELECTOR",
-                    color = SkyBlueColor,
+                    color = CyanColor,
                     fontSize = 16.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
@@ -115,7 +150,7 @@ fun StationListSheet(
                 )
             }
 
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+            HorizontalDivider(color = BorderColor, thickness = 1.dp)
 
             // Search field
             OutlinedTextField(
@@ -127,7 +162,7 @@ fun StationListSheet(
                 placeholder = {
                     Text("Buscar estacoes...", color = GreyOutColor, fontFamily = FontFamily.Monospace, fontSize = 15.sp)
                 },
-                leadingIcon = { Icon(Icons.Default.Search, null, tint = SkyBlueColor, modifier = Modifier.size(18.dp)) },
+                leadingIcon = { Icon(Icons.Default.Search, null, tint = AccentTeal, modifier = Modifier.size(18.dp)) },
                 trailingIcon = {
                     if (uiState.searchQuery.isNotEmpty()) {
                         IconButton(onClick = { onSearch("") }, modifier = Modifier.size(32.dp)) {
@@ -136,9 +171,9 @@ fun StationListSheet(
                     }
                 },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = BorderBlue,
-                    unfocusedBorderColor = DarkGreyColor,
-                    cursorColor = FrequencyYellow,
+                    focusedBorderColor = AccentTeal,
+                    unfocusedBorderColor = BorderColor,
+                    cursorColor = AccentTeal,
                     focusedTextColor = WhiteColor,
                     unfocusedTextColor = WhiteColor
                 ),
@@ -161,16 +196,16 @@ fun StationListSheet(
                             onClick = onLoadTop,
                             label = { Text("BRASIL", fontSize = 15.sp, fontFamily = FontFamily.Monospace) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = BorderBlue,
-                                selectedLabelColor = FrequencyYellow,
-                                containerColor = BackgroundBlack,
-                                labelColor = DarkGreyColor
+                                selectedContainerColor = AccentTeal.copy(alpha = 0.2f),
+                                selectedLabelColor = AccentTeal,
+                                containerColor = PanelBg,
+                                labelColor = DimWhite
                             ),
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = selected,
-                                selectedBorderColor = BorderBlue,
-                                borderColor = DarkGreyColor,
+                                selectedBorderColor = AccentTeal,
+                                borderColor = BorderColor,
                                 borderWidth = 1.dp,
                                 selectedBorderWidth = 1.dp
                             )
@@ -183,16 +218,16 @@ fun StationListSheet(
                             onClick = { onLoadRegion(region) },
                             label = { Text(region.display, fontSize = 15.sp, fontFamily = FontFamily.Monospace) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = BorderBlue,
-                                selectedLabelColor = FrequencyYellow,
-                                containerColor = BackgroundBlack,
-                                labelColor = DarkGreyColor
+                                selectedContainerColor = AccentTeal.copy(alpha = 0.2f),
+                                selectedLabelColor = AccentTeal,
+                                containerColor = PanelBg,
+                                labelColor = DimWhite
                             ),
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = selected,
-                                selectedBorderColor = BorderBlue,
-                                borderColor = DarkGreyColor,
+                                selectedBorderColor = AccentTeal,
+                                borderColor = BorderColor,
                                 borderWidth = 1.dp,
                                 selectedBorderWidth = 1.dp
                             )
@@ -201,7 +236,7 @@ fun StationListSheet(
                 }
             }
 
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+            HorizontalDivider(color = BorderColor, thickness = 1.dp)
 
             val displayStations = if (uiState.searchQuery.length >= 2) uiState.searchResults else uiState.stations
 
@@ -245,7 +280,7 @@ private fun StationItem(station: RadioStation, isCurrent: Boolean, onClick: () -
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (isCurrent) Color(0xFF001500) else BackgroundBlack)
+            .background(if (isCurrent) AccentTeal.copy(alpha = 0.08f) else PanelBg)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -256,7 +291,7 @@ private fun StationItem(station: RadioStation, isCurrent: Boolean, onClick: () -
                 .size(42.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(GreyOutColor)
-                .border(1.dp, if (isCurrent) SignalGreen else DarkGreyColor, RoundedCornerShape(4.dp)),
+                .border(1.dp, if (isCurrent) AccentTeal else BorderColor, RoundedCornerShape(4.dp)),
             contentAlignment = Alignment.Center
         ) {
             if (station.favicon.isNotBlank()) {
@@ -276,7 +311,7 @@ private fun StationItem(station: RadioStation, isCurrent: Boolean, onClick: () -
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = station.name,
-                color = if (isCurrent) SignalGreen else FrequencyYellow,
+                color = if (isCurrent) AccentTeal else FrequencyYellow,
                 fontSize = 16.sp,
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
@@ -286,7 +321,7 @@ private fun StationItem(station: RadioStation, isCurrent: Boolean, onClick: () -
             Row {
                 Text(
                     text = "${station.displayCodec} ${station.displayBitrate}k",
-                    color = SkyBlueColor,
+                    color = CyanColor,
                     fontSize = 16.sp,
                     fontFamily = FontFamily.Monospace
                 )

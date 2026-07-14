@@ -1,18 +1,52 @@
 package com.radioisaac.ui
 
 import android.content.res.Configuration
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,12 +63,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.radioisaac.ui.theme.*
+import com.radioisaac.ui.theme.AccentTeal
+import com.radioisaac.ui.theme.BackgroundBlack
+import com.radioisaac.ui.theme.BorderColor
+import com.radioisaac.ui.theme.CyanColor
+import com.radioisaac.ui.theme.DarkGreyColor
+import com.radioisaac.ui.theme.DimWhite
+import com.radioisaac.ui.theme.FrequencyYellow
+import com.radioisaac.ui.theme.GreyOutColor
+import com.radioisaac.ui.theme.OrangeColor
+import com.radioisaac.ui.theme.PanelBg
+import com.radioisaac.ui.theme.PanelBg2
+import com.radioisaac.ui.theme.SignalGreen
+import com.radioisaac.ui.theme.SignalRed
+import com.radioisaac.ui.theme.WhiteColor
 import com.radioisaac.viewmodel.RadioUiState
 import com.radioisaac.viewmodel.RadioViewModel
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RadioScreen(vm: RadioViewModel = viewModel()) {
@@ -48,52 +96,30 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
             .background(BackgroundBlack)
             .systemBarsPadding()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .border(2.dp, BorderBlue)
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             TefHeaderRow(uiState)
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
             if (isLandscape) {
-                LandscapeContent(
-                    uiState = uiState,
-                    onPrev = vm::prevStation,
-                    onNext = vm::nextStation,
-                    onPlayStop = vm::togglePlayback,
-                    modifier = Modifier.weight(1f)
-                )
+                LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, Modifier.weight(1f))
             } else {
-                PortraitContent(
-                    uiState = uiState,
-                    onPrev = vm::prevStation,
-                    onNext = vm::nextStation,
-                    onPlayStop = vm::togglePlayback,
-                    modifier = Modifier.weight(1f)
-                )
+                PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, Modifier.weight(1f))
             }
         }
 
-        FloatingActionButton(
-            onClick = vm::openStationList,
+        // FAB — station list
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(20.dp)
-                .size(48.dp),
-            containerColor = Color(0xFF000033),
-            contentColor = FrequencyYellow,
-            shape = RoundedCornerShape(4.dp),
-            elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp)
+                .padding(16.dp)
+                .size(52.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(PanelBg2)
+                .border(1.dp, AccentTeal.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                .clickable(onClick = vm::openStationList),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .border(1.dp, BorderBlue, RoundedCornerShape(4.dp))
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(Icons.Default.List, contentDescription = "Estações", modifier = Modifier.size(20.dp))
-                Text("LIST", fontSize = 14.sp, fontFamily = FontFamily.Monospace, color = FrequencyYellow)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.List, null, tint = AccentTeal, modifier = Modifier.size(22.dp))
+                Text("LIST", fontSize = 9.sp, fontFamily = FontFamily.Monospace, color = AccentTeal)
             }
         }
 
@@ -104,13 +130,13 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
                     .padding(bottom = 80.dp, start = 12.dp, end = 12.dp),
                 action = {
                     TextButton(onClick = vm::clearError) {
-                        Text("OK", color = FrequencyYellow, fontFamily = FontFamily.Monospace, fontSize = 15.sp)
+                        Text("OK", color = AccentTeal, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                     }
                 },
-                containerColor = Color(0xFF220000),
+                containerColor = Color(0xFF2A0A10),
                 contentColor = SignalRed
             ) {
-                Text(msg, fontFamily = FontFamily.Monospace, fontSize = 15.sp, color = SignalRed)
+                Text(msg, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = SignalRed)
             }
         }
     }
@@ -127,317 +153,270 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
     }
 }
 
-// ─── PORTRAIT: stacked column ─────────────────────────────────────────────────
+// ─── PORTRAIT ─────────────────────────────────────────────────────────────────
 
 @Composable
 private fun PortraitContent(
     uiState: RadioUiState,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
-    onPlayStop: () -> Unit,
+    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        TefMainDisplay(
-            uiState = uiState,
-            onPrev = onPrev,
-            onNext = onNext,
-            onPlayStop = onPlayStop,
-            modifier = Modifier.weight(1f)
-        )
-        HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+        TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f))
         TefInfoBoxesRow(uiState)
-        HorizontalDivider(color = BorderBlue, thickness = 1.dp)
         TefMetersRow(uiState)
-        HorizontalDivider(color = BorderBlue, thickness = 1.dp)
-        TefPtyRow(uiState)
-        HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+        TefRdsDataRow(uiState)
         TefPsRow(uiState)
-        HorizontalDivider(color = BorderBlue, thickness = 1.dp)
         TefRtFooter(uiState)
     }
 }
 
-// ─── LANDSCAPE: left (station) + right (meters/data) ─────────────────────────
+// ─── LANDSCAPE ────────────────────────────────────────────────────────────────
 
 @Composable
 private fun LandscapeContent(
     uiState: RadioUiState,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
-    onPlayStop: () -> Unit,
+    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.fillMaxSize()) {
-        // Left panel: station logo + name + info boxes
         Column(modifier = Modifier.weight(1.4f).fillMaxHeight()) {
-            TefMainDisplay(
-                uiState = uiState,
-                onPrev = onPrev,
-                onNext = onNext,
-                onPlayStop = onPlayStop,
-                modifier = Modifier.weight(1f)
-            )
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+            TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f))
             TefInfoBoxesRow(uiState)
         }
-        // Vertical separator
-        Box(
-            modifier = Modifier
-                .width(1.dp)
-                .fillMaxHeight()
-                .background(BorderBlue)
-        )
-        // Right panel: meters + data rows
+        Box(Modifier.width(1.dp).fillMaxHeight().background(BorderColor))
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             TefMetersRow(uiState)
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
-            TefPtyRow(uiState)
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
+            TefRdsDataRow(uiState)
             TefPsRow(uiState)
-            HorizontalDivider(color = BorderBlue, thickness = 1.dp)
             TefRtFooter(uiState)
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
         }
     }
 }
 
-// ─── HEADER — stereo dots + RDS box + kbps + FM + AUTO BW/iMS/EQ ─────────────
+// ─── HEADER ───────────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefHeaderRow(uiState: RadioUiState) {
     val infiniteTransition = rememberInfiniteTransition(label = "rds")
     val rdsAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f, targetValue = 0.3f,
-        animationSpec = infiniteRepeatable(tween(600), RepeatMode.Reverse),
+        initialValue = 1f, targetValue = 0.2f,
+        animationSpec = infiniteRepeatable(tween(700), RepeatMode.Reverse),
         label = "rdsAlpha"
     )
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(32.dp)
-            .background(Color(0xFF000008))
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(PanelBg)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(if (uiState.isStereo) StereoRedColor else GreyOutColor))
-        Spacer(Modifier.width(2.dp))
-        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(if (uiState.isStereo) StereoRedColor else GreyOutColor))
-        Spacer(Modifier.width(6.dp))
-
-        Box(
-            modifier = Modifier
-                .background(
-                    if (uiState.hasRdsData) Color(0xFFCC0000) else Color(0xFF330000),
-                    RoundedCornerShape(2.dp)
-                )
-                .padding(horizontal = 4.dp, vertical = 1.dp)
-        ) {
-            Text(
-                text = "RDS",
-                color = if (uiState.hasRdsData) Color.White.copy(alpha = rdsAlpha) else GreyOutColor,
-                fontSize = 15.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
+        // Stereo indicator
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            Box(Modifier.size(9.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
+            Box(Modifier.size(9.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
         }
-
-        Spacer(Modifier.width(8.dp))
-
-        val bitrate = uiState.currentStation?.bitrate ?: 0
         Text(
-            text = if (bitrate > 0) "$bitrate kbps" else "--- kbps",
-            color = CyanColor,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold
+            text = if (uiState.isStereo) "ST" else "MO",
+            color = if (uiState.isStereo) AccentTeal else DarkGreyColor,
+            fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold
         )
+
+        // RDS badge
+        RdsPill(label = "RDS", active = uiState.hasRdsData, activeColor = AccentTeal, alpha = rdsAlpha)
+        RdsPill(label = "TP",  active = false, activeColor = OrangeColor)
+        RdsPill(label = "TA",  active = false, activeColor = SignalRed)
 
         Spacer(Modifier.weight(1f))
 
-        Text("FM", color = SkyBlueColor, fontSize = 15.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.width(10.dp))
-
-        TefHeaderBtn("AUTO", uiState.isStreamActive)
-        Spacer(Modifier.width(3.dp))
-        TefHeaderBtn("iMS", uiState.isStereo)
-        Spacer(Modifier.width(3.dp))
-        TefHeaderBtn("EQ", uiState.isPlaying)
+        // Bitrate
+        val bitrate = uiState.currentStation?.bitrate ?: 0
+        Text(
+            text = if (bitrate > 0) "${bitrate}k" else "---",
+            color = CyanColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.width(4.dp))
+        // Codec
+        Text(
+            text = uiState.currentStation?.displayCodec ?: "···",
+            color = DimWhite, fontSize = 11.sp, fontFamily = FontFamily.Monospace
+        )
+        Spacer(Modifier.width(4.dp))
+        HeaderBtn("FM", true)
+        Spacer(Modifier.width(2.dp))
+        HeaderBtn("BW", uiState.isStreamActive)
+        Spacer(Modifier.width(2.dp))
+        HeaderBtn("AGC", uiState.isPlaying)
     }
 }
 
 @Composable
-private fun TefHeaderBtn(label: String, active: Boolean) {
+private fun RdsPill(label: String, active: Boolean, activeColor: Color, alpha: Float = 1f) {
     Box(
         modifier = Modifier
-            .border(1.dp, if (active) CyanColor.copy(alpha = 0.8f) else GreyOutColor, RoundedCornerShape(2.dp))
-            .padding(horizontal = 4.dp, vertical = 1.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (active) activeColor.copy(alpha = 0.15f) else GreyOutColor.copy(alpha = 0.5f))
+            .border(1.dp, if (active) activeColor.copy(alpha = alpha) else DarkGreyColor, RoundedCornerShape(4.dp))
+            .padding(horizontal = 5.dp, vertical = 2.dp)
     ) {
         Text(
             text = label,
-            color = if (active) CyanColor else GreyOutColor,
-            fontSize = 14.sp,
-            fontFamily = FontFamily.Monospace
+            color = if (active) activeColor.copy(alpha = alpha) else DarkGreyColor,
+            fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold
         )
     }
 }
 
-// ─── MAIN DISPLAY — favicon + large station name + dBuV ──────────────────────
+@Composable
+private fun HeaderBtn(label: String, active: Boolean) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (active) AccentTeal.copy(alpha = 0.12f) else Color.Transparent)
+            .border(1.dp, if (active) AccentTeal.copy(alpha = 0.6f) else DarkGreyColor, RoundedCornerShape(4.dp))
+            .padding(horizontal = 5.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = label,
+            color = if (active) AccentTeal else DarkGreyColor,
+            fontSize = 10.sp, fontFamily = FontFamily.Monospace
+        )
+    }
+}
+
+// ─── MAIN DISPLAY ─────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefMainDisplay(
     uiState: RadioUiState,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
-    onPlayStop: () -> Unit,
+    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val signalDb = uiState.signalLevel * 95f
-    val dbColor = when {
-        signalDb > 65 -> SignalGreen
-        signalDb > 40 -> FrequencyYellow
-        signalDb > 20 -> OrangeColor
-        else -> SignalRed
-    }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(SectionBg),
+            .background(PanelBg),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Station favicon box (like the logo box in webserver UI)
+        // Favicon
         Box(
             modifier = Modifier
-                .padding(start = 8.dp)
-                .size(54.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFF000022))
-                .border(1.dp, BorderBlue.copy(alpha = 0.6f), RoundedCornerShape(4.dp)),
+                .padding(start = 10.dp)
+                .size(56.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(PanelBg2)
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             val favicon = uiState.currentStation?.favicon
             if (!favicon.isNullOrBlank()) {
                 AsyncImage(
-                    model = favicon,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(4.dp)),
+                    model = favicon, contentDescription = null,
+                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)),
                     contentScale = ContentScale.Fit
                 )
             } else {
-                Icon(
-                    Icons.Default.Radio,
-                    contentDescription = null,
-                    tint = SkyBlueColor.copy(alpha = 0.4f),
-                    modifier = Modifier.size(28.dp)
-                )
+                Icon(Icons.Default.Radio, null, tint = AccentTeal.copy(alpha = 0.35f), modifier = Modifier.size(28.dp))
             }
         }
 
-        // Prev arrow
-        IconButton(onClick = onPrev, modifier = Modifier.size(36.dp)) {
-            Icon(Icons.Default.SkipPrevious, "Anterior", tint = PurpleColor, modifier = Modifier.size(24.dp))
+        // Prev
+        IconButton(onClick = onPrev, modifier = Modifier.size(38.dp)) {
+            Icon(Icons.Default.SkipPrevious, null, tint = AccentTeal.copy(alpha = 0.7f), modifier = Modifier.size(26.dp))
         }
 
-        // Center: frequency + PS name + play button
+        // Center: freq + PS + play
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 4.dp),
+            modifier = Modifier.weight(1f).padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             val station = uiState.currentStation
             val freq = station?.extractedFrequency
-            val psName = station?.psName ?: "--------"
-            val fullName = station?.name ?: "---"
 
-            // Frequency line — big if available, else "INTERNET"
+            // Frequency
             if (freq != null) {
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
                     Text(
                         text = freq,
-                        color = CyanColor,
-                        fontSize = 34.sp,
+                        color = AccentTeal,
+                        fontSize = 36.sp,
                         fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(Modifier.width(3.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "FM",
-                        color = CyanColor.copy(alpha = 0.7f),
-                        fontSize = 15.sp,
+                        text = "MHz",
+                        color = AccentTeal.copy(alpha = 0.55f),
+                        fontSize = 13.sp,
                         fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        modifier = Modifier.padding(bottom = 6.dp)
                     )
                 }
             } else {
                 Text(
-                    text = "INTERNET",
+                    "WEB RADIO",
                     color = DarkGreyColor,
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
                     letterSpacing = 3.sp
                 )
+                Spacer(Modifier.height(2.dp))
             }
 
-            // PS name (8 chars, yellow — same as RDS PS field)
+            // PS name — padded to 8 chars, yellow, large
+            val psRaw = (station?.name ?: "--------").take(8).uppercase().padEnd(8)
             Text(
-                text = psName,
-                color = if (station != null) FrequencyYellow else GreyOutColor,
-                fontSize = 34.sp,
+                text = psRaw,
+                color = if (station != null) FrequencyYellow else DarkGreyColor,
+                fontSize = 22.sp,
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                letterSpacing = 4.sp,
+                textAlign = TextAlign.Center
             )
 
-            // Full name subtitle (grey, smaller)
-            if (fullName.length > 8 && station != null) {
+            // Full name if longer
+            if ((station?.name?.length ?: 0) > 8) {
                 Text(
-                    text = fullName,
-                    color = DarkGreyColor,
-                    fontSize = 16.sp,
+                    text = station!!.name,
+                    color = DimWhite,
+                    fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(horizontal = 6.dp)
                 )
             }
 
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
 
-            // Play/stop button + buffering
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            // Play/stop + buffering
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
-                        .background(if (uiState.isPlaying) Color(0xFF001500) else Color(0xFF120800))
-                        .border(1.dp, if (uiState.isPlaying) SignalGreen else OrangeColor, CircleShape)
+                        .background(if (uiState.isPlaying) AccentTeal.copy(alpha = 0.15f) else OrangeColor.copy(alpha = 0.12f))
+                        .border(1.5.dp, if (uiState.isPlaying) AccentTeal else OrangeColor, CircleShape)
                         .clickable(onClick = onPlayStop),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (uiState.isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                        contentDescription = if (uiState.isPlaying) "Stop" else "Play",
-                        tint = if (uiState.isPlaying) SignalGreen else OrangeColor,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = null,
+                        tint = if (uiState.isPlaying) AccentTeal else OrangeColor,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 if (uiState.isBuffering) {
-                    Spacer(Modifier.width(4.dp))
                     CircularProgressIndicator(
-                        modifier = Modifier.size(12.dp),
+                        modifier = Modifier.size(14.dp),
                         color = CyanColor,
                         strokeWidth = 1.5.dp
                     )
@@ -445,36 +424,36 @@ private fun TefMainDisplay(
             }
         }
 
-        // Next arrow
-        IconButton(onClick = onNext, modifier = Modifier.size(36.dp)) {
-            Icon(Icons.Default.SkipNext, "Próxima", tint = PurpleColor, modifier = Modifier.size(24.dp))
+        // Next
+        IconButton(onClick = onNext, modifier = Modifier.size(38.dp)) {
+            Icon(Icons.Default.SkipNext, null, tint = AccentTeal.copy(alpha = 0.7f), modifier = Modifier.size(26.dp))
         }
 
-        // Signal dBuV — right column
+        // dBuV column
+        val dbColor = when {
+            signalDb > 65 -> SignalGreen
+            signalDb > 40 -> FrequencyYellow
+            signalDb > 20 -> OrangeColor
+            else -> SignalRed
+        }
         Column(
-            modifier = Modifier.padding(end = 8.dp).width(50.dp),
+            modifier = Modifier.padding(end = 10.dp).width(52.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "%4.1f".format(signalDb),
                 color = dbColor,
-                fontSize = 34.sp,
+                fontSize = 26.sp,
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Text(
-                text = "dBuV",
-                color = WhiteColor,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center
-            )
+            Text("dBµV", color = DimWhite, fontSize = 10.sp, fontFamily = FontFamily.Monospace, textAlign = TextAlign.Center)
         }
     }
 }
 
-// ─── INFO BOXES — PI CODE | BITRATE | SIGNAL (webserver dashboard style) ─────
+// ─── INFO BOXES ───────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefInfoBoxesRow(uiState: RadioUiState) {
@@ -490,307 +469,174 @@ private fun TefInfoBoxesRow(uiState: RadioUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF000008))
-            .padding(horizontal = 6.dp, vertical = 5.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+            .background(BackgroundBlack)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        TefInfoBox(
-            label = "PI CODE",
-            value = uiState.currentStation?.piCode ?: "----",
-            valueColor = FrequencyYellow,
-            modifier = Modifier.weight(1f)
-        )
-        TefInfoBox(
-            label = "BITRATE",
-            value = if (bitrate > 0) "${bitrate}k" else "---",
-            valueColor = CyanColor,
-            modifier = Modifier.weight(1f)
-        )
-        TefInfoBox(
-            label = "SIGNAL",
-            value = "%4.1f".format(signalDb),
-            valueColor = dbColor,
-            modifier = Modifier.weight(1f)
-        )
+        InfoBox("PI CODE",  uiState.currentStation?.piCode ?: "----",  FrequencyYellow, Modifier.weight(1f))
+        InfoBox("BITRATE",  if (bitrate > 0) "${bitrate}k" else "---", CyanColor,       Modifier.weight(1f))
+        InfoBox("SIGNAL",   "%4.1f".format(signalDb),                  dbColor,         Modifier.weight(1f))
+        InfoBox("COUNTRY",  uiState.currentStation?.displayCountry ?: "--", DimWhite,   Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun TefInfoBox(
-    label: String,
-    value: String,
-    valueColor: Color,
-    modifier: Modifier = Modifier
-) {
+private fun InfoBox(label: String, value: String, valueColor: Color, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .border(1.dp, BorderBlue.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
-            .background(Color(0xFF000015), RoundedCornerShape(3.dp))
-            .padding(horizontal = 4.dp, vertical = 3.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .background(PanelBg)
+            .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = label,
-            color = DarkGreyColor,
-            fontSize = 14.sp,
-            fontFamily = FontFamily.Monospace,
-            letterSpacing = 0.5.sp
-        )
-        Text(
-            text = value,
-            color = valueColor,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
+        Text(label, color = DarkGreyColor, fontSize = 9.sp, fontFamily = FontFamily.Monospace, letterSpacing = 0.5.sp)
+        Text(value, color = valueColor, fontSize = 15.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
     }
 }
 
-// ─── METERS — S bar (scale: 1 3 5 7 9 +10 +30) + M bar (0–120%) ──────────────
+// ─── SIGNAL METERS ────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefMetersRow(uiState: RadioUiState) {
-    val animSignal by animateFloatAsState(
-        targetValue = uiState.signalLevel,
-        animationSpec = tween(280),
-        label = "signal"
-    )
-    val animQuality by animateFloatAsState(
-        targetValue = uiState.qualityLevel,
-        animationSpec = tween(280),
-        label = "quality"
-    )
+    val animSignal by animateFloatAsState(uiState.signalLevel, tween(280), label = "sig")
+    val animQuality by animateFloatAsState(uiState.qualityLevel, tween(280), label = "qual")
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF000005))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .background(PanelBg)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        TefSMeter(value = animSignal)
-        Spacer(Modifier.height(4.dp))
-        TefMMeter(value = animQuality, bitrate = uiState.currentStation?.bitrate ?: 0)
+        MeterBar(label = "S", value = animSignal, ticks = listOf("1","3","5","7","9","+10","+30"), redFraction = 0.57f)
+        MeterBar(label = "M", value = animQuality, ticks = listOf("0","20","40","60","80","100","120%"), redFraction = 0.68f, suffix = if ((uiState.currentStation?.bitrate ?: 0) > 0) "${uiState.currentStation!!.bitrate}k" else "")
     }
 }
 
 @Composable
-private fun TefSMeter(value: Float) {
+private fun MeterBar(label: String, value: Float, ticks: List<String>, redFraction: Float, suffix: String = "") {
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 14.dp, end = 0.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 18.dp, end = if (suffix.isNotBlank()) 32.dp else 0.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            listOf("1", "3", "5", "7", "9", "+10", "+30").forEach { tick ->
-                Text(
-                    text = tick,
-                    color = if (tick.startsWith("+")) SignalRed else SignalGreen,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily.Monospace
-                )
+            ticks.forEach { tick ->
+                Text(tick, color = if (tick.startsWith("+") || tick == "120%") SignalRed else DimWhite, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("S", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.width(14.dp))
-            Canvas(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(vertical = 1.dp)
-            ) {
-                val total = 47
-                val segW = (size.width - (total - 1) * 0.8f) / total
+        Row(modifier = Modifier.fillMaxWidth().height(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, color = WhiteColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.width(18.dp))
+            Canvas(modifier = Modifier.weight(1f).fillMaxHeight().padding(vertical = 2.dp)) {
+                val total = 50
+                val segW = (size.width - (total - 1) * 1f) / total
                 val filled = (value * total).toInt().coerceIn(0, total)
-                val greenCount = (total * 0.57f).toInt()
-
+                val greenCount = (total * redFraction).toInt()
                 for (i in 0 until total) {
                     val col = when {
                         i >= filled -> GreyOutColor
-                        i < greenCount -> SignalGreen
+                        i < greenCount -> AccentTeal
                         else -> SignalRed
                     }
-                    drawRect(
-                        color = col,
-                        topLeft = Offset(i * (segW + 0.8f), 0f),
-                        size = Size(segW, size.height)
-                    )
+                    drawRect(col, Offset(i * (segW + 1f), 0f), Size(segW, size.height))
                 }
+            }
+            if (suffix.isNotBlank()) {
+                Text(suffix, color = CyanColor, fontSize = 10.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.width(30.dp), textAlign = TextAlign.End)
             }
         }
     }
 }
 
-@Composable
-private fun TefMMeter(value: Float, bitrate: Int) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("M", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.width(14.dp))
-            Canvas(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(vertical = 1.dp)
-            ) {
-                val total = 47
-                val segW = (size.width - (total - 1) * 0.8f) / total
-                val filled = (value * total).toInt().coerceIn(0, total)
-                val greenCount = (total * 0.68f).toInt()
-
-                for (i in 0 until total) {
-                    val col = when {
-                        i >= filled -> GreyOutColor
-                        i < greenCount -> SignalGreen
-                        else -> SignalRed
-                    }
-                    drawRect(
-                        color = col,
-                        topLeft = Offset(i * (segW + 0.8f), 0f),
-                        size = Size(segW, size.height)
-                    )
-                }
-            }
-            Text(
-                text = if (bitrate > 0) "${bitrate}k" else "---",
-                color = CyanColor,
-                fontSize = 15.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.width(28.dp),
-                textAlign = TextAlign.End
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 14.dp, end = 28.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            listOf("0", "20", "40", "60", "80", "100", "120%").forEach { tick ->
-                Text(
-                    text = tick,
-                    color = if (tick == "120%") SignalRed else SignalGreen,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-        }
-    }
-}
-
-// ─── PTY ROW — genre + clock + SQ/OFF + S/N dB ───────────────────────────────
+// ─── RDS DATA ROW ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefPtyRow(uiState: RadioUiState) {
+private fun TefRdsDataRow(uiState: RadioUiState) {
     var clockStr by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
-        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-        while (true) {
-            clockStr = sdf.format(Date())
-            delay(10000)
-        }
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        while (true) { clockStr = sdf.format(Date()); delay(1000) }
     }
-
     val snr = (uiState.signalLevel * 68f).toInt()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFF000003))
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(BackgroundBlack)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text("PTY:", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace)
-        Spacer(Modifier.width(3.dp))
-        Text(
-            text = uiState.currentStation?.displayTags?.ifBlank { "---" } ?: "---",
-            color = DarkGreyColor,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Monospace,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        if (uiState.rtArtist.isNotBlank()) {
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = "| ${uiState.rtArtist}",
-                color = FrequencyYellow,
-                fontSize = 16.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
+        RdsField("PTY", uiState.currentStation?.displayTags?.take(12)?.ifBlank { "---" } ?: "---", FrequencyYellow, Modifier.weight(1f))
+        RdsField("ART", uiState.rtArtist.take(16).ifBlank { "---" }, AccentTeal, Modifier.weight(1f))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(clockStr, color = CyanColor, fontSize = 13.sp, fontFamily = FontFamily.Monospace)
+            Text("S/N %2ddB".format(snr), color = DimWhite, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
         }
-        Text(text = clockStr, color = CyanColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace)
-        Spacer(Modifier.width(8.dp))
-        Text("SQ:", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace)
-        Spacer(Modifier.width(2.dp))
-        Text(
-            text = if (uiState.isStreamActive) "ON " else "OFF",
-            color = if (uiState.isStreamActive) SignalGreen else OrangeColor,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Monospace
-        )
-        Spacer(Modifier.width(6.dp))
-        Text(
-            text = "S/N %2d dB".format(snr),
-            color = CyanColor,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.Monospace
-        )
     }
 }
 
-// ─── PS ROW — PS: name + PI: [uuid short] ────────────────────────────────────
+@Composable
+private fun RdsField(label: String, value: String, valueColor: Color, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text(label, color = DarkGreyColor, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+        Text(value, color = valueColor, fontSize = 12.sp, fontFamily = FontFamily.Monospace, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+// ─── PS ROW ───────────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefPsRow(uiState: RadioUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(32.dp)
-            .background(Color(0xFF000008))
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(PanelBg)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("PS:", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace)
-        Spacer(Modifier.width(3.dp))
-        Text(
-            text = uiState.currentStation?.name?.take(8)?.uppercase() ?: "--------",
-            color = FrequencyYellow,
-            fontSize = 15.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text("PI:", color = WhiteColor, fontSize = 16.sp, fontFamily = FontFamily.Monospace)
-        Spacer(Modifier.width(3.dp))
+        // PS label
+        Text("PS", color = DarkGreyColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+
+        // 8-char cells
+        val psChars = (uiState.currentStation?.name ?: "").take(8).uppercase().padEnd(8)
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            psChars.forEach { ch ->
+                Box(
+                    modifier = Modifier
+                        .size(width = 18.dp, height = 26.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(PanelBg2)
+                        .border(1.dp, BorderColor, RoundedCornerShape(3.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = ch.toString(),
+                        color = if (uiState.currentStation != null) FrequencyYellow else DarkGreyColor,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        // PI code
+        Text("PI", color = DarkGreyColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
         Box(
             modifier = Modifier
-                .border(1.dp, BorderBlue, RoundedCornerShape(2.dp))
-                .background(Color(0xFF000022))
-                .padding(horizontal = 5.dp, vertical = 1.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .background(PanelBg2)
+                .border(1.dp, AccentTeal.copy(alpha = 0.4f), RoundedCornerShape(5.dp))
+                .padding(horizontal = 8.dp, vertical = 3.dp)
         ) {
             Text(
                 text = uiState.currentStation?.piCode ?: "----",
-                color = FrequencyYellow,
-                fontSize = 14.sp,
+                color = AccentTeal,
+                fontSize = 15.sp,
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold
             )
@@ -798,7 +644,7 @@ private fun TefPsRow(uiState: RadioUiState) {
     }
 }
 
-// ─── RT FOOTER — scrolling now-playing text ───────────────────────────────────
+// ─── RT FOOTER ────────────────────────────────────────────────────────────────
 
 @Composable
 private fun TefRtFooter(uiState: RadioUiState) {
@@ -809,35 +655,32 @@ private fun TefRtFooter(uiState: RadioUiState) {
         else -> "AGUARDANDO ESTACAO..."
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "scroll")
+    val infiniteTransition = rememberInfiniteTransition(label = "rt")
     val offsetAnim by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(rtText.length * 180, easing = LinearEasing),
-            RepeatMode.Restart
-        ),
-        label = "scrollOffset"
+        initialValue = 0f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(rtText.length * 160, easing = LinearEasing), RepeatMode.Restart),
+        label = "scroll"
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(34.dp)
-            .background(Color(0xFF000033)),
+            .background(PanelBg2)
+            .border(width = 0.dp, color = Color.Transparent) // spacer line
+            .padding(vertical = 1.dp)
+            .background(AccentTeal.copy(alpha = 0.06f))
+            .height(30.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        val padStart = (1f - offsetAnim) * 300f
+        val padStart = (1f - offsetAnim) * 320f
         Text(
-            text = "  $rtText  •  $rtText  ",
-            color = CyanColor,
-            fontSize = 14.sp,
+            text = "  $rtText  ·  $rtText  ",
+            color = AccentTeal,
+            fontSize = 13.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            modifier = Modifier
-                .padding(start = padStart.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(start = padStart.dp).fillMaxWidth(),
             overflow = TextOverflow.Clip
         )
     }

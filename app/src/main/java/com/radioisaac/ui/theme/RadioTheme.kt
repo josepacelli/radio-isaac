@@ -10,67 +10,69 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// TFT color palette — ported from TEF6686_ESP32 TFT_Colors.h
-val BackgroundBlack = Color(0xFF000000)
-val FrequencyYellow = Color(0xFFFFFF00)
-val BorderBlue = Color(0xFF0000EE)
-val SignalGreen = Color(0xFF00CC00)
-val SignalRed = Color(0xFFEE2222)
-val CyanColor = Color(0xFF00FFFF)
-val SkyBlueColor = Color(0xFF5588BB)
-val DarkGreyColor = Color(0xFF4A5060)
-val GreyOutColor = Color(0xFF252830)
-val OrangeColor = Color(0xFFFF8800)
-val PurpleColor = Color(0xFFAA22DD)
-val WhiteColor = Color(0xFFEEEEEE)
-val StereoRedColor = Color(0xFFEE1111)
-val SectionBg = Color(0xFF030508)
+// fm-dx-webserver inspired palette
+val BackgroundBlack  = Color(0xFF16181E)   // deep charcoal
+val PanelBg          = Color(0xFF1E2028)   // panel background
+val PanelBg2         = Color(0xFF23262F)   // slightly lighter panel
+val BorderColor      = Color(0xFF2E3340)   // subtle panel border
+val AccentTeal       = Color(0xFF58DBAB)   // primary accent — teal
+val AccentTealDim    = Color(0xFF2A6B55)   // dim teal for inactive
+val FrequencyYellow  = Color(0xFFFFD166)   // frequency / PS name
+val SignalGreen      = Color(0xFF06D6A0)   // signal green
+val SignalRed        = Color(0xFFFF5776)   // error / red accent
+val CyanColor        = Color(0xFF48CAE4)   // secondary cyan
+val SkyBlueColor     = Color(0xFF6A8EAE)   // muted blue labels
+val DarkGreyColor    = Color(0xFF4A5568)   // dim labels
+val GreyOutColor     = Color(0xFF2D3142)   // inactive segments
+val OrangeColor      = Color(0xFFFFB347)   // buffering / warn
+val WhiteColor       = Color(0xFFECEFF4)   // primary text
+val DimWhite         = Color(0xFF8892A0)   // secondary text
 
 private val RadioColorScheme = darkColorScheme(
     background = BackgroundBlack,
-    surface = BackgroundBlack,
-    primary = FrequencyYellow,
-    secondary = CyanColor,
-    tertiary = SignalGreen,
+    surface    = PanelBg,
+    primary    = AccentTeal,
+    secondary  = CyanColor,
+    tertiary   = SignalGreen,
     onBackground = WhiteColor,
-    onSurface = WhiteColor,
-    error = SignalRed
+    onSurface    = WhiteColor,
+    error        = SignalRed
 )
 
 val RadioTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
-        fontSize = 36.sp,
+        fontSize = 40.sp,
         color = FrequencyYellow,
         letterSpacing = 2.sp
     ),
     displayMedium = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        color = FrequencyYellow,
+        fontSize = 24.sp,
+        color = AccentTeal,
         letterSpacing = 1.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
+        fontSize = 15.sp,
         color = WhiteColor
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Monospace,
-        fontSize = 12.sp,
+        fontSize = 13.sp,
         color = WhiteColor
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.Monospace,
-        fontSize = 10.sp,
+        fontSize = 11.sp,
         color = DarkGreyColor
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.Monospace,
-        fontSize = 10.sp,
+        fontSize = 11.sp,
         color = CyanColor
     )
 )
@@ -79,7 +81,7 @@ val RadioTypography = Typography(
 fun RadioIsaacTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = RadioColorScheme,
-        typography = RadioTypography,
-        content = content
+        typography  = RadioTypography,
+        content     = content
     )
 }

@@ -27,8 +27,15 @@ data class RadioStation(
     val uuidShort: String get() = uuid.take(8).uppercase()
     val piCode: String get() = uuid.hashCode().and(0xFFFF).toString(16).uppercase().padStart(4, '0')
     val extractedFrequency: String? get() {
-        val m = Regex("""(\d{2,3}[.,]\d)\s*(?:FM|AM|MHz|KHz)?""", RegexOption.IGNORE_CASE).find(name)
-        return m?.groupValues?.get(1)?.replace(',', '.')
+        // FM: 87.5–107.9 MHz  |  AM: 530–1700 kHz (4 digits, no decimal)
+        val fmMatch = Regex("""(\d{2,3}[.,]\d{1,2})\s*(?:FM|MHz)?""", RegexOption.IGNORE_CASE).find(name)
+        if (fmMatch != null) {
+            val v = fmMatch.groupValues[1].replace(',', '.').toDoubleOrNull()
+            if (v != null && v in 87.0..108.0) return fmMatch.groupValues[1].replace(',', '.')
+        }
+        val amMatch = Regex("""\b(5[3-9]\d|[6-9]\d{2}|1[0-6]\d{2}|1700)\s*(?:AM|kHz|KHz)?""", RegexOption.IGNORE_CASE).find(name)
+        if (amMatch != null) return "${amMatch.groupValues[1]} kHz"
+        return null
     }
     val psName: String get() = name.trim().take(8).uppercase()
 }

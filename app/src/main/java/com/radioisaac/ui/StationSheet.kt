@@ -318,19 +318,30 @@ private fun StationItem(station: RadioStation, isCurrent: Boolean, onClick: () -
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val freq = station.extractedFrequency
+                if (freq != null) {
+                    Text(
+                        text = freq,
+                        color = AccentTeal,
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(6.dp))
+                }
                 Text(
                     text = "${station.displayCodec} ${station.displayBitrate}k",
                     color = CyanColor,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontFamily = FontFamily.Monospace
                 )
                 if (station.displayTags.isNotBlank()) {
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = station.displayTags.take(24),
+                        text = station.displayTags.take(20),
                         color = DarkGreyColor,
-                        fontSize = 16.sp,
+                        fontSize = 13.sp,
                         fontFamily = FontFamily.Monospace,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

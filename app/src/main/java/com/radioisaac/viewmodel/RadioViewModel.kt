@@ -18,6 +18,8 @@ import com.radioisaac.PlaybackService
 import com.radioisaac.data.BrazilRegion
 import com.radioisaac.data.RadioRepository
 import com.radioisaac.data.RadioStation
+import com.radioisaac.data.StationMetadata
+import com.radioisaac.data.StationMetadataStore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +43,10 @@ data class RadioUiState(
     val rtArtist: String = "",
     val rtTitle: String = "",
     val hasRdsData: Boolean = false,
+    val customPs: String = "",
+    val customPty: String = "",
+    val customRt: String = "",
+    val showMetadataEditor: Boolean = false,
     val errorMessage: String? = null,
     val showStationList: Boolean = false,
     val searchQuery: String = "",
@@ -260,11 +266,35 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 rtArtist = "",
                 rtTitle = "",
                 hasRdsData = false,
+                customPs = "",
+                customPty = "",
+                customRt = "",
                 errorMessage = null,
                 showStationList = false
             )
         }
         playStream(station.effectiveStreamUrl)
+        // Load any locally saved metadata for this station
+        val saved = StationMetadataStore.load(getApplication(), station.uuid)
+        if (saved != null) {
+            _uiState.update { it.copy(customPs = saved.ps, customPty = saved.pty, customRt = saved.rt) }
+        }
+    }
+
+    fun openMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = true) }
+    fun closeMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = false) }
+
+    fun saveStationMetadata(ps: String, pty: String, rt: String) {
+        val uuid = _uiState.value.currentStation?.uuid ?: return
+        val meta = StationMetadata(ps = ps.take(8), pty = pty, rt = rt)
+        StationMetadataStore.save(getApplication(), uuid, meta)
+        _uiState.update { it.copy(customPs = meta.ps, customPty = meta.pty, customRt = meta.rt, showMetadataEditor = false) }
+    }
+
+    fun clearStationMetadata() {
+        val uuid = _uiState.value.currentStation?.uuid ?: return
+        StationMetadataStore.delete(getApplication(), uuid)
+        _uiState.update { it.copy(customPs = "", customPty = "", customRt = "", showMetadataEditor = false) }
     }
 
     private fun playStream(url: String) {

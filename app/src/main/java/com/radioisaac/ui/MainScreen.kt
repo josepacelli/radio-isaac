@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
@@ -99,9 +100,9 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TefHeaderRow(uiState)
             if (isLandscape) {
-                LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, Modifier.weight(1f))
+                LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
             } else {
-                PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, Modifier.weight(1f))
+                PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
             }
         }
 
@@ -141,6 +142,19 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
         }
     }
 
+    val editStation = uiState.currentStation
+    if (uiState.showMetadataEditor && editStation != null) {
+        MetadataEditorDialog(
+            station    = editStation,
+            currentPs  = uiState.customPs,
+            currentPty = uiState.customPty,
+            currentRt  = uiState.customRt,
+            onSave     = vm::saveStationMetadata,
+            onClear    = vm::clearStationMetadata,
+            onDismiss  = vm::closeMetadataEditor
+        )
+    }
+
     if (uiState.showStationList) {
         StationListSheet(
             uiState = uiState,
@@ -158,11 +172,11 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
 @Composable
 private fun PortraitContent(
     uiState: RadioUiState,
-    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
+    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit, onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f))
+        TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f), onEdit = onEdit)
         TefInfoBoxesRow(uiState)
         TefMetersRow(uiState)
         TefRdsDataRow(uiState)
@@ -176,12 +190,12 @@ private fun PortraitContent(
 @Composable
 private fun LandscapeContent(
     uiState: RadioUiState,
-    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
+    onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit, onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1.4f).fillMaxHeight()) {
-            TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f))
+            TefMainDisplay(uiState, onPrev, onNext, onPlayStop, Modifier.weight(1f), onEdit = onEdit)
             TefInfoBoxesRow(uiState)
         }
         Box(Modifier.width(1.dp).fillMaxHeight().background(BorderColor))
@@ -293,7 +307,8 @@ private fun HeaderBtn(label: String, active: Boolean) {
 private fun TefMainDisplay(
     uiState: RadioUiState,
     onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onEdit: (() -> Unit)? = null
 ) {
     val signalDb = uiState.signalLevel * 95f
 
@@ -360,17 +375,20 @@ private fun TefMainDisplay(
                 }
             } else {
                 Text(
-                    "WEB RADIO",
-                    color = DarkGreyColor,
-                    fontSize = 12.sp,
+                    text = station?.name?.take(14)?.uppercase() ?: "WEB RADIO",
+                    color = AccentTeal.copy(alpha = 0.7f),
+                    fontSize = if ((station?.name?.length ?: 0) > 8) 18.sp else 28.sp,
                     fontFamily = FontFamily.Monospace,
-                    letterSpacing = 3.sp
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(2.dp))
             }
 
-            // PS name — padded to 8 chars, yellow, large
-            val psRaw = (station?.name ?: "--------").take(8).uppercase().padEnd(8)
+            // PS name — custom overrides station name; padded to 8 chars, yellow, large
+            val psRaw = (uiState.customPs.ifBlank { station?.name ?: "--------" }).take(8).uppercase().padEnd(8)
             Text(
                 text = psRaw,
                 color = if (station != null) FrequencyYellow else DarkGreyColor,
@@ -396,7 +414,7 @@ private fun TefMainDisplay(
 
             Spacer(Modifier.height(6.dp))
 
-            // Play/stop + buffering
+            // Play/stop + buffering + edit button
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(
                     modifier = Modifier
@@ -420,6 +438,17 @@ private fun TefMainDisplay(
                         color = CyanColor,
                         strokeWidth = 1.5.dp
                     )
+                }
+                // Edit metadata button
+                if (uiState.currentStation != null && onEdit != null) {
+                    val hasCustom = uiState.customPs.isNotBlank() || uiState.customPty.isNotBlank() || uiState.customRt.isNotBlank()
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Default.Edit, null,
+                            tint = if (hasCustom) FrequencyYellow else DarkGreyColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -567,7 +596,8 @@ private fun TefRdsDataRow(uiState: RadioUiState) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        RdsField("PTY", uiState.currentStation?.displayTags?.take(12)?.ifBlank { "---" } ?: "---", FrequencyYellow, Modifier.weight(1f))
+        val ptyDisplay = uiState.customPty.ifBlank { uiState.currentStation?.displayTags?.take(12) ?: "" }.ifBlank { "---" }
+        RdsField("PTY", ptyDisplay, FrequencyYellow, Modifier.weight(1f))
         RdsField("ART", uiState.rtArtist.take(16).ifBlank { "---" }, AccentTeal, Modifier.weight(1f))
         Column(horizontalAlignment = Alignment.End) {
             Text(clockStr, color = CyanColor, fontSize = 13.sp, fontFamily = FontFamily.Monospace)
@@ -599,8 +629,32 @@ private fun TefPsRow(uiState: RadioUiState) {
         // PS label
         Text("PS", color = DarkGreyColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
 
-        // 8-char cells
-        val psChars = (uiState.currentStation?.name ?: "").take(8).uppercase().padEnd(8)
+        // 8-char cells — custom PS overrides station name; scrolls when > 8 chars
+        val psSource = (uiState.customPs.ifBlank { uiState.currentStation?.name ?: "" }).uppercase()
+        val shouldScroll = psSource.length > 8
+        // Always pad to ≥8 chars so totalLen is never 0 (avoids divide-by-zero in tween)
+        val scrollText = "$psSource        "
+        val totalLen = scrollText.length  // always >= 8
+
+        val infiniteScroll = rememberInfiniteTransition(label = "ps_scroll")
+        val rawOffset by infiniteScroll.animateFloat(
+            initialValue = 0f,
+            targetValue = totalLen.toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = totalLen * 280, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "ps_offset"
+        )
+        val offset = if (shouldScroll) rawOffset.toInt() % totalLen else 0
+
+        val psChars = if (shouldScroll) {
+            val doubled = scrollText + scrollText
+            doubled.substring(offset, offset + 8)
+        } else {
+            psSource.take(8).padEnd(8)
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             psChars.forEach { ch ->
                 Box(
@@ -649,6 +703,7 @@ private fun TefPsRow(uiState: RadioUiState) {
 @Composable
 private fun TefRtFooter(uiState: RadioUiState) {
     val rtText = when {
+        uiState.customRt.isNotBlank() -> uiState.customRt.uppercase()
         uiState.rtTitle.isNotBlank() -> uiState.rtTitle.uppercase()
         uiState.nowPlaying.isNotBlank() -> uiState.nowPlaying.uppercase()
         uiState.currentStation != null -> uiState.currentStation.displayTags.uppercase().ifBlank { "RADIO ONLINE" }

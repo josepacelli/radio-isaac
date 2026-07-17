@@ -218,14 +218,14 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSe
         modifier = Modifier
             .fillMaxWidth()
             .background(PanelBg)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // Stereo indicator
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            Box(Modifier.size(9.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
-            Box(Modifier.size(9.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
+            Box(Modifier.size(8.dp).clip(CircleShape).background(if (uiState.isStereo) AccentTeal else GreyOutColor))
         }
         Text(
             text = if (uiState.isStereo) "ST" else "MO",
@@ -233,10 +233,14 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSe
             fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold
         )
 
-        // RDS badge
+        // RDS badge + source indicator
         RdsPill(label = "RDS", active = uiState.hasRdsData, activeColor = AccentTeal, alpha = rdsAlpha)
-        RdsPill(label = "TP",  active = false, activeColor = OrangeColor)
-        RdsPill(label = "TA",  active = false, activeColor = SignalRed)
+        if (uiState.rdsSource.isNotBlank()) {
+            val srcColor = if (uiState.rdsSource == "ICY") CyanColor else OrangeColor
+            RdsPill(label = uiState.rdsSource, active = true, activeColor = srcColor)
+        }
+        RdsPill(label = "TP", active = false, activeColor = OrangeColor)
+        RdsPill(label = "TA", active = false, activeColor = SignalRed)
 
         Spacer(Modifier.weight(1f))
 
@@ -246,19 +250,14 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSe
             text = if (bitrate > 0) "${bitrate}k" else "---",
             color = CyanColor, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold
         )
-        Spacer(Modifier.width(4.dp))
         // Codec
         Text(
             text = uiState.currentStation?.displayCodec ?: "···",
             color = DimWhite, fontSize = 11.sp, fontFamily = FontFamily.Monospace
         )
-        Spacer(Modifier.width(4.dp))
         HeaderBtn("FM", true)
-        Spacer(Modifier.width(2.dp))
         HeaderBtn("BW", uiState.isStreamActive)
-        Spacer(Modifier.width(2.dp))
         HeaderBtn("AGC", uiState.isPlaying)
-        Spacer(Modifier.width(6.dp))
         // Station list button — in header so it never overlaps content
         Box(
             modifier = Modifier
@@ -274,17 +273,16 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSe
                 Text("LIST", color = AccentTeal, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
         }
-        Spacer(Modifier.width(2.dp))
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
-                .background(DimWhite.copy(alpha = 0.08f))
-                .border(1.dp, DimWhite.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
+                .background(DimWhite.copy(alpha = 0.12f))
+                .border(1.dp, DimWhite.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                 .clickable(onClick = onOpenSettings)
-                .padding(6.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Settings, null, tint = DimWhite, modifier = Modifier.size(13.dp))
+            Icon(Icons.Default.Settings, null, tint = DimWhite, modifier = Modifier.size(14.dp))
         }
     }
 }

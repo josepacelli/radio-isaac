@@ -46,6 +46,7 @@ data class RadioUiState(
     val rtArtist: String = "",
     val rtTitle: String = "",
     val hasRdsData: Boolean = false,
+    val rdsSource: String = "",
     val customPs: String = "",
     val customPty: String = "",
     val customRt: String = "",
@@ -111,11 +112,11 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            val artist = mediaMetadata.artist?.toString()?.trim() ?: ""
-            val title = mediaMetadata.title?.toString()?.trim() ?: ""
+            val artist = mediaMetadata.artist?.toString()?.trim()?.takeIf { !isGarbageMetadata(it) } ?: ""
+            val title = mediaMetadata.title?.toString()?.trim()?.takeIf { !isGarbageMetadata(it) } ?: ""
             when {
                 artist.isNotBlank() && title.isNotBlank() ->
-                    _uiState.update { it.copy(rtArtist = artist, rtTitle = title, nowPlaying = "$artist - $title", hasRdsData = true) }
+                    _uiState.update { it.copy(rtArtist = artist, rtTitle = title, nowPlaying = "$artist - $title", hasRdsData = true, rdsSource = "ICY") }
                 title.isNotBlank() -> parseAndUpdateRt(title)
                 artist.isNotBlank() -> parseAndUpdateRt(artist)
             }
@@ -151,7 +152,20 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }, MoreExecutors.directExecutor())
     }
 
+    private fun isGarbageMetadata(text: String): Boolean {
+        val lower = text.lowercase().trim()
+        return lower.isBlank() ||
+            lower.contains("aguardando") ||
+            lower.contains("off air") ||
+            lower.contains("intervalo") ||
+            lower.contains("comercial") ||
+            lower == "no artist" ||
+            lower == "no title" ||
+            lower == "unknown"
+    }
+
     private fun parseAndUpdateRt(raw: String) {
+        if (isGarbageMetadata(raw)) return
         val dashIdx = raw.indexOf(" - ")
         if (dashIdx > 0) {
             _uiState.update {
@@ -159,11 +173,12 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     rtArtist = raw.substring(0, dashIdx).trim(),
                     rtTitle = raw.substring(dashIdx + 3).trim(),
                     nowPlaying = raw,
-                    hasRdsData = true
+                    hasRdsData = true,
+                    rdsSource = "ICY"
                 )
             }
         } else {
-            _uiState.update { it.copy(rtArtist = "", rtTitle = raw, nowPlaying = raw, hasRdsData = true) }
+            _uiState.update { it.copy(rtArtist = "", rtTitle = raw, nowPlaying = raw, hasRdsData = true, rdsSource = "ICY") }
         }
     }
 
@@ -213,7 +228,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     val result = AudDClient.recognize(station.effectiveStreamUrl, state.auddToken)
                     if (result != null) {
                         val (artist, title) = result
-                        _uiState.update { it.copy(rtArtist = artist, rtTitle = title, nowPlaying = "$artist - $title", hasRdsData = true) }
+                        _uiState.update { it.copy(rtArtist = artist, rtTitle = title, nowPlaying = "$artist - $title", hasRdsData = true, rdsSource = "AUD") }
                     }
                 }
                 delay(90_000)
@@ -335,6 +350,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 rtArtist = "",
                 rtTitle = "",
                 hasRdsData = false,
+                rdsSource = "",
                 customPs = "",
                 customPty = "",
                 customRt = "",

@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
@@ -103,9 +104,9 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TefHeaderRow(uiState, vm::openStationList, vm::openSettings)
             if (isLandscape) {
-                LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
+                LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, vm::fingerprintNow, Modifier.weight(1f))
             } else {
-                PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
+                PortraitContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, vm::fingerprintNow, Modifier.weight(1f))
             }
         }
 
@@ -167,6 +168,7 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
 private fun PortraitContent(
     uiState: RadioUiState,
     onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit, onEdit: () -> Unit,
+    onFingerprintNow: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -175,7 +177,7 @@ private fun PortraitContent(
         TefMetersRow(uiState)
         TefRdsDataRow(uiState)
         TefPsRow(uiState, onEdit)
-        TefRtFooter(uiState, onEdit)
+        TefRtFooter(uiState, onEdit, onFingerprintNow)
     }
 }
 
@@ -185,6 +187,7 @@ private fun PortraitContent(
 private fun LandscapeContent(
     uiState: RadioUiState,
     onPrev: () -> Unit, onNext: () -> Unit, onPlayStop: () -> Unit, onEdit: () -> Unit,
+    onFingerprintNow: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.fillMaxSize()) {
@@ -197,7 +200,7 @@ private fun LandscapeContent(
             TefMetersRow(uiState)
             TefRdsDataRow(uiState)
             TefPsRow(uiState, onEdit)
-            TefRtFooter(uiState, onEdit)
+            TefRtFooter(uiState, onEdit, onFingerprintNow)
             Spacer(Modifier.weight(1f))
         }
     }
@@ -745,7 +748,7 @@ private fun TefPsRow(uiState: RadioUiState, onEdit: () -> Unit) {
 // ─── RT FOOTER ────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefRtFooter(uiState: RadioUiState, onEdit: () -> Unit) {
+private fun TefRtFooter(uiState: RadioUiState, onEdit: () -> Unit, onFingerprintNow: () -> Unit) {
     val rtText = when {
         uiState.customRt.isNotBlank() -> uiState.customRt.uppercase()
         uiState.rtArtist.isNotBlank() && uiState.rtTitle.isNotBlank() -> "${uiState.rtArtist} + ${uiState.rtTitle}".uppercase()
@@ -782,5 +785,26 @@ private fun TefRtFooter(uiState: RadioUiState, onEdit: () -> Unit) {
             modifier = Modifier.padding(start = padStart.dp).fillMaxWidth(),
             overflow = TextOverflow.Clip
         )
+        if (uiState.isPlaying && uiState.fingerprintEnabled) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 4.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(PanelBg2.copy(alpha = 0.9f))
+                    .clickable(onClick = onFingerprintNow)
+                    .padding(4.dp)
+            ) {
+                if (uiState.isFingerprintLoading) {
+                    CircularProgressIndicator(
+                        color = OrangeColor,
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 1.5.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Fingerprint, null, tint = OrangeColor, modifier = Modifier.size(14.dp))
+                }
+            }
+        }
     }
 }

@@ -50,6 +50,7 @@ data class RadioUiState(
     val customPs: String = "",
     val customPty: String = "",
     val customRt: String = "",
+    val isFingerprintLoading: Boolean = false,
     val showMetadataEditor: Boolean = false,
     val showSettings: Boolean = false,
     val fingerprintEnabled: Boolean = true,
@@ -368,6 +369,23 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun openMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = true) }
     fun closeMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = false) }
+
+    fun fingerprintNow() {
+        if (!_uiState.value.fingerprintEnabled) return
+        fingerprintJob?.cancel()
+        fingerprintJob = viewModelScope.launch {
+            val station = _uiState.value.currentStation ?: return@launch
+            _uiState.update { it.copy(isFingerprintLoading = true) }
+            val result = AudDClient.recognize(station.effectiveStreamUrl, _uiState.value.auddToken)
+            _uiState.update { state ->
+                if (result != null) state.copy(
+                    rtArtist = result.first, rtTitle = result.second,
+                    nowPlaying = "${result.first} - ${result.second}",
+                    hasRdsData = true, rdsSource = "AUD", isFingerprintLoading = false
+                ) else state.copy(isFingerprintLoading = false)
+            }
+        }
+    }
 
     fun openSettings() = _uiState.update { it.copy(showSettings = true) }
     fun closeSettings() = _uiState.update { it.copy(showSettings = false) }

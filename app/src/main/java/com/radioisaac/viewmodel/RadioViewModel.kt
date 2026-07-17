@@ -15,6 +15,8 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.radioisaac.PlaybackService
+import com.radioisaac.data.AppSettings
+import com.radioisaac.data.AudDClient
 import com.radioisaac.data.BrazilRegion
 import com.radioisaac.data.RadioRepository
 import com.radioisaac.data.RadioStation
@@ -48,6 +50,9 @@ data class RadioUiState(
     val customPty: String = "",
     val customRt: String = "",
     val showMetadataEditor: Boolean = false,
+    val showSettings: Boolean = false,
+    val fingerprintEnabled: Boolean = true,
+    val auddToken: String = "test",
     val errorMessage: String? = null,
     val showStationList: Boolean = false,
     val searchQuery: String = "",
@@ -67,11 +72,18 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var player: MediaController? = null
     private var signalJob: Job? = null
+    private var fingerprintJob: Job? = null
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             _uiState.update { it.copy(isPlaying = isPlaying) }
-            if (isPlaying) startSignalSimulation() else stopSignalSimulation()
+            if (isPlaying) {
+                startSignalSimulation()
+                startFingerprintIfNeeded()
+            } else {
+                stopSignalSimulation()
+                fingerprintJob?.cancel()
+            }
         }
 
         override fun onPlaybackStateChanged(state: Int) {
@@ -127,7 +139,14 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         future.addListener({
             player = future.get()
             player?.addListener(playerListener)
-            _uiState.update { it.copy(isPlaying = player?.isPlaying == true, isBuffering = player?.playbackState == Player.STATE_BUFFERING) }
+            _uiState.update {
+                it.copy(
+                    isPlaying = player?.isPlaying == true,
+                    isBuffering = player?.playbackState == Player.STATE_BUFFERING,
+                    fingerprintEnabled = AppSettings.isFingerprintEnabled(application),
+                    auddToken = AppSettings.getAuddToken(application)
+                )
+            }
             loadTopStations()
         }, MoreExecutors.directExecutor())
     }
@@ -177,6 +196,27 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
                 delay(500)
+            }
+        }
+    }
+
+    private fun startFingerprintIfNeeded() {
+        if (!_uiState.value.fingerprintEnabled) return
+        fingerprintJob?.cancel()
+        fingerprintJob = viewModelScope.launch {
+            delay(20_000)
+            while (true) {
+                val state = _uiState.value
+                if (!state.fingerprintEnabled) break
+                if (!state.hasRdsData) {
+                    val station = state.currentStation ?: break
+                    val result = AudDClient.recognize(station.effectiveStreamUrl, state.auddToken)
+                    if (result != null) {
+                        val (artist, title) = result
+                        _uiState.update { it.copy(rtArtist = artist, rtTitle = title, nowPlaying = "$artist - $title", hasRdsData = true) }
+                    }
+                }
+                delay(90_000)
             }
         }
     }
@@ -285,6 +325,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectStation(station: RadioStation) {
+        fingerprintJob?.cancel()
         val idx = _uiState.value.stations.indexOfFirst { it.uuid == station.uuid }
         _uiState.update {
             it.copy(
@@ -311,6 +352,15 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun openMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = true) }
     fun closeMetadataEditor() = _uiState.update { it.copy(showMetadataEditor = false) }
+
+    fun openSettings() = _uiState.update { it.copy(showSettings = true) }
+    fun closeSettings() = _uiState.update { it.copy(showSettings = false) }
+    fun saveSettings(enabled: Boolean, token: String) {
+        AppSettings.setFingerprintEnabled(getApplication(), enabled)
+        AppSettings.setAuddToken(getApplication(), token)
+        _uiState.update { it.copy(showSettings = false, fingerprintEnabled = enabled, auddToken = token) }
+        if (!enabled) fingerprintJob?.cancel()
+    }
 
     fun saveStationMetadata(ps: String, pty: String, rt: String) {
         val uuid = _uiState.value.currentStation?.uuid ?: return

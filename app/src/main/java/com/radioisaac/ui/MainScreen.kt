@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
@@ -100,7 +101,7 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
             .systemBarsPadding()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TefHeaderRow(uiState, vm::openStationList)
+            TefHeaderRow(uiState, vm::openStationList, vm::openSettings)
             if (isLandscape) {
                 LandscapeContent(uiState, vm::prevStation, vm::nextStation, vm::togglePlayback, vm::openMetadataEditor, Modifier.weight(1f))
             } else {
@@ -136,6 +137,15 @@ fun RadioScreen(vm: RadioViewModel = viewModel()) {
             onSave     = vm::saveStationMetadata,
             onClear    = vm::clearStationMetadata,
             onDismiss  = vm::closeMetadataEditor
+        )
+    }
+
+    if (uiState.showSettings) {
+        SettingsDialog(
+            fingerprintEnabled = uiState.fingerprintEnabled,
+            auddToken = uiState.auddToken,
+            onSave = vm::saveSettings,
+            onDismiss = vm::closeSettings
         )
     }
 
@@ -196,7 +206,7 @@ private fun LandscapeContent(
 // ─── HEADER ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit) {
+private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSettings: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "rds")
     val rdsAlpha by infiniteTransition.animateFloat(
         initialValue = 1f, targetValue = 0.2f,
@@ -263,6 +273,18 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit) {
                 Icon(Icons.Default.List, null, tint = AccentTeal, modifier = Modifier.size(13.dp))
                 Text("LIST", color = AccentTeal, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
+        }
+        Spacer(Modifier.width(2.dp))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(DimWhite.copy(alpha = 0.08f))
+                .border(1.dp, DimWhite.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
+                .clickable(onClick = onOpenSettings)
+                .padding(6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Settings, null, tint = DimWhite, modifier = Modifier.size(13.dp))
         }
     }
 }

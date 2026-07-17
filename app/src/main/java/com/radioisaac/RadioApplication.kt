@@ -17,7 +17,7 @@ class RadioApplication : Application(), ImageLoaderFactory {
             .diskCache {
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("station_logos"))
-                    .maxSizeBytes(50L * 1024 * 1024)
+                    .maxSizeBytes(100L * 1024 * 1024)
                     .build()
             }
             .crossfade(true)

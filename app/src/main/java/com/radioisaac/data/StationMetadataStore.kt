@@ -11,7 +11,17 @@ data class StationMetadata(
 
 object StationMetadataStore {
     private const val PREF_NAME = "station_metadata_v1"
+    private const val KEY_LAST_UUID = "__last_station_uuid__"
     private val gson = Gson()
+
+    fun saveLastUuid(context: Context, uuid: String) {
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            .edit().putString(KEY_LAST_UUID, uuid).apply()
+    }
+
+    fun loadLastUuid(context: Context): String? =
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_LAST_UUID, null)
 
     fun save(context: Context, uuid: String, meta: StationMetadata) {
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

@@ -18,6 +18,7 @@ import com.radioisaac.PlaybackService
 import com.radioisaac.data.BrazilRegion
 import com.radioisaac.data.RadioRepository
 import com.radioisaac.data.RadioStation
+import com.radioisaac.data.StationListCache
 import com.radioisaac.data.StationMetadata
 import com.radioisaac.data.StationMetadataStore
 import kotlinx.coroutines.Job
@@ -126,6 +127,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         future.addListener({
             player = future.get()
             player?.addListener(playerListener)
+            _uiState.update { it.copy(isPlaying = player?.isPlaying == true, isBuffering = player?.playbackState == Player.STATE_BUFFERING) }
             loadTopStations()
         }, MoreExecutors.directExecutor())
     }
@@ -194,14 +196,40 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadTopStations() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            val cached = StationListCache.load(getApplication())
+            if (cached != null) {
+                applyStationList(cached, "BR")
+            } else {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             repository.getByCountry("BR")
                 .onSuccess { stations ->
-                    _uiState.update { it.copy(stations = stations, isLoading = false, selectedCategory = "BR") }
+                    StationListCache.save(getApplication(), stations)
+                    applyStationList(stations, "BR")
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = "Falha ao carregar: ${e.message}") }
+                    if (cached == null)
+                        _uiState.update { it.copy(isLoading = false, errorMessage = "Falha ao carregar: ${e.message}") }
                 }
+        }
+    }
+
+    private fun applyStationList(stations: List<RadioStation>, category: String) {
+        val lastUuid = StationMetadataStore.loadLastUuid(getApplication())
+        val lastStation = if (lastUuid != null) stations.firstOrNull { it.uuid == lastUuid } else null
+        val lastIdx = if (lastStation != null) stations.indexOfFirst { it.uuid == lastUuid } else -1
+        val saved = if (lastStation != null) StationMetadataStore.load(getApplication(), lastUuid!!) else null
+        _uiState.update {
+            it.copy(
+                stations = stations,
+                isLoading = false,
+                selectedCategory = category,
+                currentStation = lastStation ?: it.currentStation,
+                currentIndex = if (lastIdx >= 0) lastIdx else it.currentIndex,
+                customPs = saved?.ps ?: it.customPs,
+                customPty = saved?.pty ?: it.customPty,
+                customRt = saved?.rt ?: it.customRt
+            )
         }
     }
 
@@ -273,8 +301,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 showStationList = false
             )
         }
+        StationMetadataStore.saveLastUuid(getApplication(), station.uuid)
         playStream(station.effectiveStreamUrl)
-        // Load any locally saved metadata for this station
         val saved = StationMetadataStore.load(getApplication(), station.uuid)
         if (saved != null) {
             _uiState.update { it.copy(customPs = saved.ps, customPty = saved.pty, customRt = saved.rt) }

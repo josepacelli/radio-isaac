@@ -728,6 +728,7 @@ private fun TefPsRow(uiState: RadioUiState, onEdit: () -> Unit) {
 private fun TefRtFooter(uiState: RadioUiState, onEdit: () -> Unit) {
     val rtText = when {
         uiState.customRt.isNotBlank() -> uiState.customRt.uppercase()
+        uiState.rtArtist.isNotBlank() && uiState.rtTitle.isNotBlank() -> "${uiState.rtArtist} + ${uiState.rtTitle}".uppercase()
         uiState.rtTitle.isNotBlank() -> uiState.rtTitle.uppercase()
         uiState.nowPlaying.isNotBlank() -> uiState.nowPlaying.uppercase()
         uiState.currentStation != null -> uiState.currentStation.displayTags.uppercase().ifBlank { "RADIO ONLINE" }

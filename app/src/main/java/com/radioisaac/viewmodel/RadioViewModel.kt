@@ -84,7 +84,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 startFingerprintIfNeeded()
             } else {
                 stopSignalSimulation()
-                fingerprintJob?.cancel()
             }
         }
 

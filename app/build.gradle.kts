@@ -11,6 +11,10 @@ val localProps = Properties().apply {
         ?.reader()?.use { load(it) }
 }
 val auddToken: String = localProps.getProperty("audd.token", "test")
+val keystorePath: String = localProps.getProperty("keystore.path", "")
+val keystoreAlias: String = localProps.getProperty("keystore.alias", "")
+val keystorePassword: String = localProps.getProperty("keystore.password", "")
+val keyPassword: String = localProps.getProperty("key.password", "")
 
 android {
     namespace = "com.radioisaac"
@@ -27,10 +31,25 @@ android {
         buildConfigField("String", "AUDD_TOKEN", "\"$auddToken\"")
     }
 
+    if (keystorePath.isNotEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                keyAlias = keystoreAlias
+                keyPassword = keyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystorePath.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

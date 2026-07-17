@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code (claude.ai/code) working in this repo.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build & Run
 
@@ -11,7 +11,7 @@ Guidance for Claude Code (claude.ai/code) working in this repo.
 ./gradlew clean                  # Clean build artifacts
 ```
 
-No tests exist.
+No tests exist in this project.
 
 Targets: `minSdk=26`, `compileSdk/targetSdk=35`, `jvmTarget=17`, Kotlin 2.0, Compose enabled.
 
@@ -30,11 +30,11 @@ RadioApiClient  RadioGardenClient  TudoRadioClient
 (RadioBrowser)   (Radio.Garden)     (TudoRadio GQL)
 ```
 
-**State:** Single `RadioUiState` data class in `RadioViewModel`, exposed as `StateFlow`. All UI state here — playing, buffering, signal level, current station, station list, metadata.
+**State:** Single `RadioUiState` data class in `RadioViewModel`, exposed as `StateFlow`. All UI state lives here — playing, buffering, signal level, current station, station list, metadata.
 
 **Playback:** `PlaybackService` (MediaSessionService) owns ExoPlayer with OkHttp datasource (ICY metadata headers). `RadioViewModel` connects via `MediaController`. ICY + MediaMetadata callbacks update UI state.
 
-**Station loading:** `RadioRepository.getByCountry()` fires 9 async requests parallel (RadioBrowser votes/clicks/trend/language/search/tags + RadioGarden + TudoRadio), deduplicates by UUID, sorts by votes. `getByRegion()` filters by Brazilian state/city with accent-stripped string matching.
+**Station loading:** `RadioRepository.getByCountry()` fires 9 async requests in parallel (RadioBrowser votes/clicks/trend/language/search/tags + RadioGarden + TudoRadio), deduplicates by UUID, sorts by votes. `getByRegion()` filters by Brazilian state/city with accent-stripped string matching.
 
 **Persistence:** Station-specific custom PS/PTY/RT text stored in SharedPreferences via `StationMetadataStore`, keyed by station UUID, loaded on `selectStation()`.
 
@@ -65,4 +65,4 @@ RadioApiClient  RadioGardenClient  TudoRadioClient
 - **Cleartext allowed:** `usesCleartextTraffic="true"` — many streams are HTTP.
 - **No minification:** `isMinifyEnabled = false` in release build.
 - **Brazilian focus:** Station list targets Brazil (`getByCountry("BR")`); `BRAZIL_REGIONS` hardcoded in `StationSheet`.
-- **API singletons:** `RadioApiClient.api`, `RadioGardenClient.api`, `TudoRadioClient.api` lazy companion object singletons — no DI.
+- **API singletons:** `RadioApiClient.api`, `RadioGardenClient.api`, `TudoRadioClient.api` are lazy companion object singletons — no DI.

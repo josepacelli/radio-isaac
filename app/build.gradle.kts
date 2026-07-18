@@ -22,8 +22,9 @@ android {
 
     defaultConfig {
         applicationId = "com.radioisaac"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 36
+        //noinspection OldTargetApi
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

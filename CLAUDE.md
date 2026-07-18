@@ -14,7 +14,7 @@ JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew lint          
 
 `JAVA_HOME` must be set — not in PATH. No tests exist.
 
-Targets: `minSdk=26`, `compileSdk/targetSdk=35`, `jvmTarget=17`, Kotlin 2.2, Compose enabled.
+Targets: `minSdk=26`, `compileSdk=37`, `targetSdk=35`, `jvmTarget=17`, Kotlin 2.2, Compose enabled.
 
 Release: minification + resource shrinking enabled. Signing via `local.properties`:
 ```
@@ -53,7 +53,7 @@ RadioApiClient  RadioGardenClient  TudoRadioClient
 
 **Music recognition (AudD):** `AudDClient` downloads ~500KB chunk from stream URL (no mic), POSTs to `api.audd.io`. Triggered automatically 20s after play if no ICY data (`hasRdsData=false`), retries every 90s. Manual trigger via fingerprint button in RT footer. `rdsSource` tracks "ICY" vs "AUD". Garbage metadata filtered in `isGarbageMetadata()` — add patterns there if new garbage strings appear.
 
-**Gradle DSL:** `android.newDsl=false` and `android.builtInKotlin=false` are required — KGP 2.2 uses `BaseExtension` cast that breaks with new AGP DSL. Do not remove these flags. Token injected as `BuildConfig.AUDD_TOKEN` via `local.properties` → `build.gradle.kts`.
+**Gradle DSL:** AGP 9.0+ new DSL active (`android.newDsl` default). `org.jetbrains.kotlin.android` plugin not applied — Kotlin built-in via AGP. Token injected as `BuildConfig.AUDD_TOKEN` via `local.properties` → `build.gradle.kts`.
 
 ## Key Files
 

@@ -29,9 +29,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Settings
@@ -272,7 +272,7 @@ private fun TefHeaderRow(uiState: RadioUiState, onOpenList: () -> Unit, onOpenSe
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                Icon(Icons.Default.List, null, tint = AccentTeal, modifier = Modifier.size(13.dp))
+                Icon(Icons.AutoMirrored.Filled.List, null, tint = AccentTeal, modifier = Modifier.size(13.dp))
                 Text("LIST", color = AccentTeal, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
         }

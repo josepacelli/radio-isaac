@@ -22,7 +22,7 @@ Android radio streaming app focused on Brazilian stations. Streams internet radi
 ### Prerequisites
 
 - Android Studio (for JBR) or JDK 17
-- Android SDK with API 35
+- Android SDK with API 37
 
 ### Debug
 
